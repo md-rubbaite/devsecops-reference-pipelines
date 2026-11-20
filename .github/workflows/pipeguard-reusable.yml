@@ -1,0 +1,51 @@
+# Reusable workflow: other repositories call this to scan their own workflows.
+#
+#   jobs:
+#     pipeguard:
+#       permissions: {contents: read, security-events: write}
+#       uses: md-rubbaite/devsecops-reference-pipelines/.github/workflows/pipeguard-reusable.yml@<commit-sha>
+#       with: {fail-on: error}
+name: pipeguard-reusable
+
+on:
+  workflow_call:
+    inputs:
+      fail-on:
+        description: Lowest severity that fails the job (error, warning or note)
+        type: string
+        default: error
+      pipeguard-ref:
+        description: Git ref of pipeguard to install (pin a commit SHA in production)
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install pipeguard
+        env:
+          REF: ${{ inputs.pipeguard-ref }}
+        run: pip install "git+https://github.com/md-rubbaite/devsecops-reference-pipelines@${REF}"
+      - name: Scan workflows
+        env:
+          FAIL_ON: ${{ inputs.fail-on }}
+        run: pipeguard scan .github/workflows --format sarif --output pipeguard.sarif --fail-on "$FAIL_ON"
+      - name: Publish findings to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        with:
+          sarif_file: pipeguard.sarif
+          category: pipeguard

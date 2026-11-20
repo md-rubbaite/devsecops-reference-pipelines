@@ -1,0 +1,27 @@
+# Hardened equivalent: least-privilege token, SHA-pinned actions, no untrusted input in shell,
+# untrusted pull requests on `pull_request` (no secrets, read-only token) and GitHub-hosted runners.
+name: hardened-example
+
+on:
+  pull_request:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Greet
+        env:
+          TITLE: ${{ github.event.issue.title }}
+        run: echo "New issue - $TITLE"
+      - name: Install a verified tool
+        run: |
+          curl -sSLo tool.tar.gz https://example.com/tool-1.2.3.tar.gz
+          echo "<expected-sha256>  tool.tar.gz" | sha256sum --check

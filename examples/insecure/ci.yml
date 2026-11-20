@@ -1,0 +1,24 @@
+# DELIBERATELY INSECURE. Every problem here is a finding pipeguard reports. Do not copy.
+name: insecure-example
+
+on:
+  pull_request_target:
+  issues:
+    types: [opened]
+
+jobs:
+  build:
+    runs-on: self-hosted
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: some-org/setup-tool@main
+      - uses: other-org/lint-action@v2
+      - name: Greet
+        run: echo "New issue - ${{ github.event.issue.title }}"
+      - name: Install
+        run: curl -sSL https://example.com/install.sh | bash
+      - name: Debug
+        run: echo "token is ${{ secrets.DEPLOY_TOKEN }}"
