@@ -10,10 +10,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Rubbaite T. Hassain" }]
-dependencies = ["PyYAML>=6.0.3"]
+dependencies = ["PyYAML>=6.0.4"]
 
 [project.optional-dependencies]
-dev = ["pytest>=9.2.0", "ruff>=0.17.5"]
+dev = ["pytest>=9.2.0", "ruff>=0.17.6"]
 
 [project.scripts]
 pipeguard = "pipeguard.cli:main"
